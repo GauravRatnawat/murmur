@@ -1,0 +1,8 @@
+openai-whisper
+sounddevice
+numpy
+scipy
+anthropic
+click
+rich
+python-dotenv

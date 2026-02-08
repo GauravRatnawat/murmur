@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "notetaking"
+version = "0.1.0"
+description = "Meeting notes CLI — record, transcribe, summarize"
+requires-python = ">=3.10"
+dependencies = [
+    "openai-whisper",
+    "sounddevice",
+    "numpy",
+    "scipy",
+    "anthropic",
+    "click",
+    "rich",
+    "python-dotenv",
+]
+
+[tool.setuptools.packages.find]
+include = ["notetaking*"]
+
+[project.scripts]
+notetaking = "notetaking.cli:cli"

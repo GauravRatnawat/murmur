@@ -1,0 +1,28 @@
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Paths
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+RECORDINGS_DIR = DATA_DIR / "recordings"
+TRANSCRIPTS_DIR = DATA_DIR / "transcripts"
+NOTES_DIR = DATA_DIR / "notes"
+
+for d in (RECORDINGS_DIR, TRANSCRIPTS_DIR, NOTES_DIR):
+    d.mkdir(parents=True, exist_ok=True)
+
+# Audio settings
+SAMPLE_RATE = 48000
+CHANNELS = 2
+DEFAULT_DEVICE = "Aggregate"
+
+# Whisper settings
+WHISPER_MODEL = "base.en"
+
+# Claude settings
+CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.env
+data/recordings/
+data/transcripts/
+data/notes/
+*.wav
+venv/
+.venv/
