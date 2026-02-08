@@ -30,29 +30,15 @@ notetaking/
 
 ## Setup
 
-### 1. Install dependencies
-
 ```bash
-pip install -e .
+git clone https://github.com/GauravRatnawat/notetaking.git
+cd notetaking
+./setup.sh
 ```
 
-### 2. Add your API key
+This single script installs dependencies, sets up your API key, installs BlackHole, and walks you through audio device configuration.
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your Anthropic API key:
-
-```
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-```
-
-Get a key from [console.anthropic.com](https://console.anthropic.com).
-
-### 3. macOS audio setup (for capturing both sides of a call)
-
-Install BlackHole and configure Aggregate/Multi-Output devices. See [docs/setup_audio.md](docs/setup_audio.md) for step-by-step instructions.
+For manual setup or details on audio devices, see [docs/setup_audio.md](docs/setup_audio.md).
 
 ## Usage
 
