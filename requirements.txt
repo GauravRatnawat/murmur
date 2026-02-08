@@ -2,7 +2,13 @@ openai-whisper
 sounddevice
 numpy
 scipy
-anthropic
 click
 rich
 python-dotenv
+
+# LLM providers (install the one you need)
+anthropic
+# openai
+# google-generativeai
+# groq
+# ollama

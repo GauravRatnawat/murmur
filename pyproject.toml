@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "notetaking"
-version = "0.1.0"
+version = "0.2.0"
 description = "Meeting notes CLI — record, transcribe, summarize"
 requires-python = ">=3.10"
 dependencies = [
@@ -12,11 +12,18 @@ dependencies = [
     "sounddevice",
     "numpy",
     "scipy",
-    "anthropic",
     "click",
     "rich",
     "python-dotenv",
 ]
+
+[project.optional-dependencies]
+anthropic = ["anthropic"]
+openai = ["openai"]
+gemini = ["google-generativeai"]
+groq = ["groq"]
+ollama = ["ollama"]
+all = ["anthropic", "openai", "google-generativeai", "groq", "ollama"]
 
 [tool.setuptools.packages.find]
 include = ["notetaking*"]

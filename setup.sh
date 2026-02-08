@@ -4,42 +4,80 @@ set -e
 echo "=== Notetaking Setup ==="
 echo ""
 
-# 1. Install Python package
-echo "[1/4] Installing Python package..."
-pip install -e . --quiet
+# 1. Pick LLM provider
+echo "[1/4] Choose your LLM provider:"
+echo ""
+echo "  1) Anthropic (Claude)        — paid, needs API key"
+echo "  2) OpenAI (GPT)              — paid, needs API key"
+echo "  3) Google Gemini              — free tier, needs API key (no credit card)"
+echo "  4) Groq                       — free tier, needs API key"
+echo "  5) Ollama                     — free, runs locally, no API key"
+echo ""
+read -rp "  Pick [1-5] (default 1): " choice
+choice=${choice:-1}
+
+case $choice in
+    1) provider="anthropic"; pip_extra="anthropic"; env_var="ANTHROPIC_API_KEY"; key_url="https://console.anthropic.com/settings/keys" ;;
+    2) provider="openai";    pip_extra="openai";    env_var="OPENAI_API_KEY";    key_url="https://platform.openai.com/api-keys" ;;
+    3) provider="gemini";    pip_extra="gemini";    env_var="GEMINI_API_KEY";    key_url="https://aistudio.google.com/apikey" ;;
+    4) provider="groq";      pip_extra="groq";      env_var="GROQ_API_KEY";      key_url="https://console.groq.com/keys" ;;
+    5) provider="ollama";    pip_extra="ollama";    env_var="";                   key_url="" ;;
+    *) echo "Invalid choice"; exit 1 ;;
+esac
+echo ""
+
+# 2. Install Python package + chosen provider SDK
+echo "[2/4] Installing Python package with $provider support..."
+pip install -e ".[$pip_extra]" --quiet
 echo "  Done."
 echo ""
 
-# 2. Install BlackHole
+# 3. Install BlackHole
 if brew list blackhole-2ch &>/dev/null; then
-    echo "[2/4] BlackHole already installed. Skipping."
+    echo "[3/4] BlackHole already installed. Skipping."
 else
-    echo "[2/4] Installing BlackHole (virtual audio driver)..."
+    echo "[3/4] Installing BlackHole (virtual audio driver)..."
     brew install blackhole-2ch
     echo "  Done."
 fi
 echo ""
 
-# 3. API key
-if [ -f .env ] && grep -q "ANTHROPIC_API_KEY=sk-ant-" .env; then
-    echo "[3/4] API key already configured. Skipping."
+# 4. API key + .env
+echo "[4/4] Configuring .env"
+if [ -f .env ]; then
+    echo "  .env already exists."
 else
-    echo "[3/4] Anthropic API key setup"
-    echo "  Get a key from: https://console.anthropic.com/settings/keys"
-    echo ""
-    read -rp "  Paste your API key (sk-ant-...): " api_key
-    if [ -z "$api_key" ]; then
-        echo "  Skipped. Add it later to .env"
-        cp -n .env.example .env 2>/dev/null || true
+    cp .env.example .env
+fi
+
+# Set provider
+sed -i '' "s/^LLM_PROVIDER=.*/LLM_PROVIDER=$provider/" .env
+
+if [ -n "$env_var" ]; then
+    current=$(grep "^$env_var=" .env 2>/dev/null | cut -d= -f2-)
+    if [ -n "$current" ] && [[ "$current" != *"your-key"* ]]; then
+        echo "  $env_var already set. Skipping."
     else
-        echo "ANTHROPIC_API_KEY=$api_key" > .env
-        echo "  Saved to .env"
+        echo "  Get a key from: $key_url"
+        echo ""
+        read -rp "  Paste your API key: " api_key
+        if [ -z "$api_key" ]; then
+            echo "  Skipped. Add $env_var to .env later."
+        else
+            # Uncomment and set the key
+            sed -i '' "s|^# *$env_var=.*|$env_var=$api_key|" .env
+            sed -i '' "s|^$env_var=.*|$env_var=$api_key|" .env
+            echo "  Saved to .env"
+        fi
     fi
+else
+    echo "  Ollama selected — no API key needed."
+    echo "  Make sure Ollama is running: ollama serve"
 fi
 echo ""
 
-# 4. Audio device setup
-echo "[4/4] macOS audio device setup"
+# 5. Audio device setup
+echo "macOS audio device setup"
 echo ""
 echo "  You need to create two devices in Audio MIDI Setup:"
 echo ""
@@ -65,14 +103,14 @@ echo ""
 echo "Devices:"
 notetaking devices
 echo ""
-echo "Testing import..."
-python -c "from notetaking.config import ANTHROPIC_API_KEY; print(f'API key: {\"configured\" if ANTHROPIC_API_KEY else \"missing\"}')"
+echo "Provider: $provider"
 echo ""
 echo "=== Setup complete! ==="
 echo ""
 echo "Usage:"
-echo "  notetaking notes     # full pipeline: record → transcribe → summarize"
-echo "  notetaking record    # record only"
-echo "  notetaking --help    # all commands"
+echo "  notetaking notes                  # full pipeline: record → transcribe → summarize"
+echo "  notetaking summarize -p gemini    # summarize with a specific provider"
+echo "  notetaking record                 # record only"
+echo "  notetaking --help                 # all commands"
 echo ""
 echo "Before a meeting, set System Settings → Sound → Output → Multi-Output Device"

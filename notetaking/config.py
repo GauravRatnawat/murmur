@@ -23,6 +23,5 @@ DEFAULT_DEVICE = "Aggregate"
 # Whisper settings
 WHISPER_MODEL = "base.en"
 
-# Claude settings
-CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+# LLM settings
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")

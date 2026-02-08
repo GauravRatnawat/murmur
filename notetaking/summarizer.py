@@ -1,8 +1,7 @@
 from pathlib import Path
 
-import anthropic
-
-from notetaking.config import ANTHROPIC_API_KEY, CLAUDE_MODEL, NOTES_DIR
+from notetaking.config import LLM_PROVIDER, NOTES_DIR
+from notetaking.llm import call_llm
 
 SYSTEM_PROMPT = """You are a meeting notes assistant. Given a meeting transcript, produce clean, structured meeting notes in Markdown format.
 
@@ -23,15 +22,12 @@ Bulleted list of any decisions that were reached during the meeting.
 If a section has no relevant content, write "None identified." under it."""
 
 
-def summarize(transcript_path: str) -> str:
-    """Summarize a transcript using Claude.
+def summarize(transcript_path: str, provider: str | None = None) -> str:
+    """Summarize a transcript using an LLM.
 
     Returns the path to the saved notes file.
     """
-    if not ANTHROPIC_API_KEY:
-        raise RuntimeError(
-            "ANTHROPIC_API_KEY not set. Add it to your .env file."
-        )
+    provider = provider or LLM_PROVIDER
 
     transcript_path = Path(transcript_path)
     stem = transcript_path.stem
@@ -50,23 +46,12 @@ def summarize(transcript_path: str) -> str:
     if not transcript_text:
         raise RuntimeError("Transcript is empty")
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-
-    print(f"Summarizing {transcript_path.name} with Claude...")
-    message = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=4096,
-        system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Here is the meeting transcript:\n\n{transcript_text}",
-            }
-        ],
-    )
+    print(f"Summarizing {transcript_path.name} with {provider}...")
+    user_message = f"Here is the meeting transcript:\n\n{transcript_text}"
+    notes_text = call_llm(provider, SYSTEM_PROMPT, user_message)
 
     notes_content = f"# Meeting Notes: {stem}\n\n"
-    notes_content += message.content[0].text
+    notes_content += notes_text
 
     notes_path.write_text(notes_content)
     print(f"Notes saved to {notes_path}")

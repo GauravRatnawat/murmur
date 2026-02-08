@@ -5,8 +5,11 @@ from rich.console import Console
 from rich.table import Table
 
 from notetaking.config import NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
+from notetaking.llm import PROVIDERS
 
 console = Console()
+
+PROVIDER_NAMES = list(PROVIDERS.keys())
 
 
 def _latest_file(directory: Path, suffix: str) -> Path | None:
@@ -60,7 +63,8 @@ def transcribe(file):
 
 @cli.command()
 @click.argument("file", required=False)
-def summarize(file):
+@click.option("-p", "--provider", type=click.Choice(PROVIDER_NAMES, case_sensitive=False), default=None, help="LLM provider to use.")
+def summarize(file, provider):
     """Summarize a transcript. Defaults to the most recent."""
     from notetaking.summarizer import summarize as do_summarize
 
@@ -72,14 +76,15 @@ def summarize(file):
         file = str(latest)
         console.print(f"Using latest transcript: {latest.name}")
 
-    path = do_summarize(file)
+    path = do_summarize(file, provider=provider)
     console.print(f"[green]Notes saved:[/green] {path}")
 
 
 @cli.command()
 @click.option("-d", "--device", default=None, help="Audio device name (substring match).")
 @click.option("-t", "--duration", default=None, type=float, help="Recording duration in seconds.")
-def notes(device, duration):
+@click.option("-p", "--provider", type=click.Choice(PROVIDER_NAMES, case_sensitive=False), default=None, help="LLM provider to use.")
+def notes(device, duration, provider):
     """Full pipeline: record → transcribe → summarize."""
     from notetaking.recorder import record as do_record
     from notetaking.summarizer import summarize as do_summarize
@@ -92,7 +97,7 @@ def notes(device, duration):
     txt_path = do_transcribe(wav_path)
 
     console.rule("[bold]Step 3: Summarize")
-    md_path = do_summarize(txt_path)
+    md_path = do_summarize(txt_path, provider=provider)
 
     console.print()
     console.print(f"[green bold]Done![/green bold] Notes at: {md_path}")
