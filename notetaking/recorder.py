@@ -1,5 +1,8 @@
 import datetime
+import queue
 import threading
+import time
+from collections.abc import Callable
 
 import numpy as np
 import sounddevice as sd
@@ -22,11 +25,26 @@ def find_device(name: str) -> int:
     raise ValueError(f"No device found matching '{name}'")
 
 
-def record(device_name: str | None = None, duration: float | None = None) -> str:
+def record(
+    device_name: str | None = None,
+    duration: float | None = None,
+    stop_event: threading.Event | None = None,
+    on_chunk: Callable[[float], None] | None = None,
+    quiet: bool = False,
+    audio_queue: queue.Queue | None = None,
+) -> str:
     """Record audio from the given device.
 
-    If duration is None, records until Ctrl+C is pressed.
+    If duration is None, records until Ctrl+C or stop_event is set.
     Returns the path to the saved WAV file.
+
+    Args:
+        device_name: Audio device name (substring match).
+        duration: Recording duration in seconds. None for unlimited.
+        stop_event: If provided, used to signal stop. Otherwise created internally.
+        on_chunk: Called with elapsed seconds after each audio chunk.
+        quiet: Suppress all print output.
+        audio_queue: If provided, copies each audio chunk into this queue for live transcription.
     """
     from notetaking.config import DEFAULT_DEVICE
 
@@ -43,12 +61,23 @@ def record(device_name: str | None = None, duration: float | None = None) -> str
     filepath = RECORDINGS_DIR / filename
 
     chunks: list[np.ndarray] = []
-    stop_event = threading.Event()
+    if stop_event is None:
+        stop_event = threading.Event()
+
+    frame_count = 0
 
     def callback(indata, frames, time_info, status):
-        if status:
+        nonlocal frame_count
+        if status and not quiet:
             print(f"  ⚠ {status}")
-        chunks.append(indata.copy())
+        chunk_copy = indata.copy()
+        chunks.append(chunk_copy)
+        if audio_queue is not None:
+            audio_queue.put(chunk_copy)
+        frame_count += frames
+        if on_chunk is not None:
+            elapsed = frame_count / SAMPLE_RATE
+            on_chunk(elapsed)
 
     stream = sd.InputStream(
         samplerate=SAMPLE_RATE,
@@ -58,17 +87,22 @@ def record(device_name: str | None = None, duration: float | None = None) -> str
         callback=callback,
     )
 
-    print(f"Recording from: {dev_info['name']}")
-    print(f"Sample rate: {SAMPLE_RATE} Hz, Channels: {channels}")
-    if duration:
-        print(f"Duration: {duration}s")
-    else:
-        print("Press Ctrl+C to stop recording...")
+    if not quiet:
+        print(f"Recording from: {dev_info['name']}")
+        print(f"Sample rate: {SAMPLE_RATE} Hz, Channels: {channels}")
+        if duration:
+            print(f"Duration: {duration}s")
+        else:
+            print("Press Ctrl+C to stop recording...")
 
     try:
         stream.start()
         if duration:
-            sd.sleep(int(duration * 1000))
+            # Interruptible timed recording: check stop_event every 100ms
+            deadline = time.monotonic() + duration
+            while time.monotonic() < deadline:
+                if stop_event.wait(timeout=0.1):
+                    break
         else:
             stop_event.wait()
     except KeyboardInterrupt:
@@ -87,5 +121,6 @@ def record(device_name: str | None = None, duration: float | None = None) -> str
     wavfile.write(str(filepath), SAMPLE_RATE, audio_int16)
 
     duration_actual = len(audio) / SAMPLE_RATE
-    print(f"Saved {duration_actual:.1f}s of audio to {filepath}")
+    if not quiet:
+        print(f"Saved {duration_actual:.1f}s of audio to {filepath}")
     return str(filepath)

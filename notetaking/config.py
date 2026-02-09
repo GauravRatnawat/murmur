@@ -23,5 +23,8 @@ DEFAULT_DEVICE = "Aggregate"
 # Whisper settings
 WHISPER_MODEL = "base.en"
 
+# Transcription backend
+TRANSCRIPTION_BACKEND = os.getenv("TRANSCRIPTION_BACKEND", "whisper")
+
 # LLM settings
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")
