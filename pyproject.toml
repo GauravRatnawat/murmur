@@ -34,6 +34,9 @@ faster = ["faster-whisper"]
 watch = ["psutil"]
 diarize = ["pyannote.audio"]
 
+# Testing
+test = ["pytest", "pytest-asyncio", "textual>=1.0", "psutil"]
+
 # Bundle (excludes mlx=Apple-only, diarize=heavy PyTorch)
 all = [
     "anthropic", "openai", "google-generativeai", "groq", "ollama",
