@@ -1,4 +1,4 @@
-"""Textual TUI dashboard for notetaking."""
+"""Textual TUI dashboard for murmur."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Footer, Header, Label, ListItem, ListView, Markdown, Static
 
-from notetaking.config import NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
+from murmur.config import NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
 
 
 # ---------------------------------------------------------------------------
@@ -189,10 +189,10 @@ class RecordingBar(Static):
 # App
 # ---------------------------------------------------------------------------
 
-class NotetakingApp(App):
-    """Interactive TUI dashboard for notetaking."""
+class MurmurApp(App):
+    """Interactive TUI dashboard for murmur."""
 
-    TITLE = "Notetaking"
+    TITLE = "Murmur"
 
     CSS = """
     #main {
@@ -327,7 +327,7 @@ class NotetakingApp(App):
         try:
             import pyperclip
         except ImportError:
-            self._update_status("pyperclip not installed (pip install notetaking[clipboard])")
+            self._update_status("pyperclip not installed (pip install murmur[clipboard])")
             return
 
         if self._selected_meeting.notes:
@@ -370,14 +370,14 @@ class NotetakingApp(App):
 
     @work(thread=True)
     def _do_record(self) -> None:
-        from notetaking.recorder import record
+        from murmur.recorder import record
 
         audio_q: queue.Queue | None = None
         live_thread: threading.Thread | None = None
 
         # Try to start live transcription if faster-whisper is available
         try:
-            from notetaking.live_transcriber import live_transcribe
+            from murmur.live_transcriber import live_transcribe
             audio_q = queue.Queue()
 
             def on_live(text: str) -> None:
@@ -414,7 +414,7 @@ class NotetakingApp(App):
 
     @work(thread=True)
     def _do_transcribe(self, audio_path: str) -> None:
-        from notetaking.transcriber import transcribe
+        from murmur.transcriber import transcribe
 
         try:
             path = transcribe(audio_path, quiet=True)
@@ -424,7 +424,7 @@ class NotetakingApp(App):
 
     @work(thread=True)
     def _do_summarize(self, transcript_path: str) -> None:
-        from notetaking.summarizer import summarize
+        from murmur.summarizer import summarize
 
         try:
             path = summarize(transcript_path, quiet=True)
@@ -437,7 +437,7 @@ class NotetakingApp(App):
         try:
             import pypandoc
         except ImportError:
-            self.post_message(OperationError("export", "pypandoc not installed (pip install notetaking[export])"))
+            self.post_message(OperationError("export", "pypandoc not installed (pip install murmur[export])"))
             return
 
         try:
@@ -451,9 +451,9 @@ class NotetakingApp(App):
     @work(thread=True)
     def _do_watch(self) -> None:
         try:
-            from notetaking.watcher import MeetingEvent, watch_meetings
+            from murmur.watcher import MeetingEvent, watch_meetings
         except ImportError:
-            self.post_message(OperationError("watch", "psutil not installed (pip install notetaking[watch])"))
+            self.post_message(OperationError("watch", "psutil not installed (pip install murmur[watch])"))
             return
 
         def on_event(event: MeetingEvent, process_name: str) -> None:
@@ -512,7 +512,7 @@ class NotetakingApp(App):
 
 
 def main() -> None:
-    app = NotetakingApp()
+    app = MurmurApp()
     app.run()
 
 

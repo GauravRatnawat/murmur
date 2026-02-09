@@ -1,4 +1,4 @@
-"""Tests for notetaking.live_transcriber — live transcription from audio queue."""
+"""Tests for murmur.live_transcriber — live transcription from audio queue."""
 
 import queue
 import sys
@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from notetaking.backends import TranscriptionResult
+from murmur.backends import TranscriptionResult
 
 
 @pytest.fixture(autouse=True)
@@ -18,17 +18,17 @@ def mock_faster_whisper():
     mock_fw = MagicMock()
     with patch.dict(sys.modules, {"faster_whisper": mock_fw}):
         # Clear cached module so it reimports with the mock
-        if "notetaking.backends._faster_whisper" in sys.modules:
-            del sys.modules["notetaking.backends._faster_whisper"]
-        if "notetaking.live_transcriber" in sys.modules:
-            del sys.modules["notetaking.live_transcriber"]
+        if "murmur.backends._faster_whisper" in sys.modules:
+            del sys.modules["murmur.backends._faster_whisper"]
+        if "murmur.live_transcriber" in sys.modules:
+            del sys.modules["murmur.live_transcriber"]
         yield mock_fw
 
 
 class TestLiveTranscribe:
     def test_processes_audio_chunks(self, mock_faster_whisper):
-        from notetaking.live_transcriber import live_transcribe
-        from notetaking.backends._faster_whisper import Backend
+        from murmur.live_transcriber import live_transcribe
+        from murmur.backends._faster_whisper import Backend
 
         # Mock the Backend's transcribe method
         with patch.object(Backend, "transcribe", return_value=TranscriptionResult(text="Hello world")):
@@ -54,7 +54,7 @@ class TestLiveTranscribe:
             assert "Hello world" in transcripts[0]
 
     def test_stop_event_stops_loop(self, mock_faster_whisper):
-        from notetaking.live_transcriber import live_transcribe
+        from murmur.live_transcriber import live_transcribe
 
         audio_q = queue.Queue()
         stop = threading.Event()
@@ -67,8 +67,8 @@ class TestLiveTranscribe:
         assert len(transcripts) == 0
 
     def test_error_resilience(self, mock_faster_whisper):
-        from notetaking.live_transcriber import live_transcribe
-        from notetaking.backends._faster_whisper import Backend
+        from murmur.live_transcriber import live_transcribe
+        from murmur.backends._faster_whisper import Backend
 
         with patch.object(Backend, "transcribe", side_effect=RuntimeError("model error")):
             audio_q = queue.Queue()

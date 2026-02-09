@@ -1,8 +1,8 @@
-"""Tests for notetaking.cli — CLI commands and options."""
+"""Tests for murmur.cli — CLI commands and options."""
 
 from click.testing import CliRunner
 
-from notetaking.cli import cli
+from murmur.cli import cli
 
 
 runner = CliRunner()
@@ -41,7 +41,7 @@ def test_ls_runs_without_error():
 
 
 def test_summarize_no_transcripts(tmp_path, monkeypatch):
-    monkeypatch.setattr("notetaking.cli.TRANSCRIPTS_DIR", tmp_path)
+    monkeypatch.setattr("murmur.cli.TRANSCRIPTS_DIR", tmp_path)
     result = runner.invoke(cli, ["summarize"])
     assert result.exit_code == 1
     assert "No transcripts found" in result.output

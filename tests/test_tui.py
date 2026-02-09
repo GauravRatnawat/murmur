@@ -1,16 +1,16 @@
-"""Tests for notetaking.tui — TUI data model and app integration."""
+"""Tests for murmur.tui — TUI data model and app integration."""
 
 from pathlib import Path
 
 import pytest
 
-from notetaking.tui import (
+from murmur.tui import (
     ExportComplete,
     LiveTranscriptUpdate,
     Meeting,
     MeetingDetected,
     MeetingEnded,
-    NotetakingApp,
+    MurmurApp,
     scan_meetings,
 )
 
@@ -61,9 +61,9 @@ class TestMeeting:
 
 class TestScanMeetings:
     def test_empty_dirs(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("notetaking.tui.RECORDINGS_DIR", tmp_path / "rec")
-        monkeypatch.setattr("notetaking.tui.TRANSCRIPTS_DIR", tmp_path / "txt")
-        monkeypatch.setattr("notetaking.tui.NOTES_DIR", tmp_path / "notes")
+        monkeypatch.setattr("murmur.tui.RECORDINGS_DIR", tmp_path / "rec")
+        monkeypatch.setattr("murmur.tui.TRANSCRIPTS_DIR", tmp_path / "txt")
+        monkeypatch.setattr("murmur.tui.NOTES_DIR", tmp_path / "notes")
         (tmp_path / "rec").mkdir()
         (tmp_path / "txt").mkdir()
         (tmp_path / "notes").mkdir()
@@ -83,9 +83,9 @@ class TestScanMeetings:
         (txt_dir / "meeting_001.txt").write_text("transcript")
         (notes_dir / "meeting_001.md").write_text("# notes")
 
-        monkeypatch.setattr("notetaking.tui.RECORDINGS_DIR", rec_dir)
-        monkeypatch.setattr("notetaking.tui.TRANSCRIPTS_DIR", txt_dir)
-        monkeypatch.setattr("notetaking.tui.NOTES_DIR", notes_dir)
+        monkeypatch.setattr("murmur.tui.RECORDINGS_DIR", rec_dir)
+        monkeypatch.setattr("murmur.tui.TRANSCRIPTS_DIR", txt_dir)
+        monkeypatch.setattr("murmur.tui.NOTES_DIR", notes_dir)
 
         result = scan_meetings()
         assert len(result) == 1
@@ -106,9 +106,9 @@ class TestScanMeetings:
         (rec_dir / "meeting_a.wav").write_bytes(b"fake")
         (txt_dir / "meeting_b.txt").write_text("transcript")
 
-        monkeypatch.setattr("notetaking.tui.RECORDINGS_DIR", rec_dir)
-        monkeypatch.setattr("notetaking.tui.TRANSCRIPTS_DIR", txt_dir)
-        monkeypatch.setattr("notetaking.tui.NOTES_DIR", notes_dir)
+        monkeypatch.setattr("murmur.tui.RECORDINGS_DIR", rec_dir)
+        monkeypatch.setattr("murmur.tui.TRANSCRIPTS_DIR", txt_dir)
+        monkeypatch.setattr("murmur.tui.NOTES_DIR", notes_dir)
 
         result = scan_meetings()
         assert len(result) == 2
@@ -125,9 +125,9 @@ class TestScanMeetings:
         (rec_dir / "meeting_20250201.wav").write_bytes(b"")
         (rec_dir / "meeting_20250301.wav").write_bytes(b"")
 
-        monkeypatch.setattr("notetaking.tui.RECORDINGS_DIR", rec_dir)
-        monkeypatch.setattr("notetaking.tui.TRANSCRIPTS_DIR", tmp_path / "txt")
-        monkeypatch.setattr("notetaking.tui.NOTES_DIR", tmp_path / "notes")
+        monkeypatch.setattr("murmur.tui.RECORDINGS_DIR", rec_dir)
+        monkeypatch.setattr("murmur.tui.TRANSCRIPTS_DIR", tmp_path / "txt")
+        monkeypatch.setattr("murmur.tui.NOTES_DIR", tmp_path / "notes")
 
         result = scan_meetings()
         stems = [m.stem for m in result]
@@ -138,7 +138,7 @@ class TestScanMeetings:
 # App integration tests (Textual Pilot)
 # ---------------------------------------------------------------------------
 
-class TestNotetakingApp:
+class TestMurmurApp:
     @pytest.fixture
     def app_with_data(self, tmp_path, monkeypatch):
         rec_dir = tmp_path / "rec"
@@ -152,25 +152,25 @@ class TestNotetakingApp:
         (txt_dir / "meeting_001.txt").write_text("=== TRANSCRIPT ===\nHello world")
         (notes_dir / "meeting_001.md").write_text("# Meeting Notes\n\n## Summary\nTest")
 
-        monkeypatch.setattr("notetaking.tui.RECORDINGS_DIR", rec_dir)
-        monkeypatch.setattr("notetaking.tui.TRANSCRIPTS_DIR", txt_dir)
-        monkeypatch.setattr("notetaking.tui.NOTES_DIR", notes_dir)
+        monkeypatch.setattr("murmur.tui.RECORDINGS_DIR", rec_dir)
+        monkeypatch.setattr("murmur.tui.TRANSCRIPTS_DIR", txt_dir)
+        monkeypatch.setattr("murmur.tui.NOTES_DIR", notes_dir)
 
-        return NotetakingApp()
+        return MurmurApp()
 
     @pytest.fixture
     def empty_app(self, tmp_path, monkeypatch):
         for d in ("rec", "txt", "notes"):
             (tmp_path / d).mkdir()
-        monkeypatch.setattr("notetaking.tui.RECORDINGS_DIR", tmp_path / "rec")
-        monkeypatch.setattr("notetaking.tui.TRANSCRIPTS_DIR", tmp_path / "txt")
-        monkeypatch.setattr("notetaking.tui.NOTES_DIR", tmp_path / "notes")
-        return NotetakingApp()
+        monkeypatch.setattr("murmur.tui.RECORDINGS_DIR", tmp_path / "rec")
+        monkeypatch.setattr("murmur.tui.TRANSCRIPTS_DIR", tmp_path / "txt")
+        monkeypatch.setattr("murmur.tui.NOTES_DIR", tmp_path / "notes")
+        return MurmurApp()
 
     @pytest.mark.asyncio
     async def test_app_starts(self, empty_app):
         async with empty_app.run_test() as pilot:
-            assert empty_app.title == "Notetaking"
+            assert empty_app.title == "Murmur"
 
     @pytest.mark.asyncio
     async def test_app_shows_meetings(self, app_with_data):
@@ -188,7 +188,7 @@ class TestNotetakingApp:
     @pytest.mark.asyncio
     async def test_tui_cli_help(self):
         from click.testing import CliRunner
-        from notetaking.cli import cli
+        from murmur.cli import cli
         runner = CliRunner()
         result = runner.invoke(cli, ["tui", "--help"])
         assert result.exit_code == 0

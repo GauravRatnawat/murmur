@@ -1,12 +1,12 @@
-"""Tests for notetaking.diarizer — speaker diarization and transcript merging."""
+"""Tests for murmur.diarizer — speaker diarization and transcript merging."""
 
 import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from notetaking.backends import Segment
-from notetaking.diarizer import DiarizedSegment, merge_transcript_with_speakers
+from murmur.backends import Segment
+from murmur.diarizer import DiarizedSegment, merge_transcript_with_speakers
 
 
 class TestMergeTranscriptWithSpeakers:
@@ -65,7 +65,7 @@ class TestMergeTranscriptWithSpeakers:
 class TestDiarize:
     def test_missing_hf_token_raises(self, monkeypatch):
         monkeypatch.delenv("HF_TOKEN", raising=False)
-        from notetaking.diarizer import diarize
+        from murmur.diarizer import diarize
         with pytest.raises(RuntimeError, match="HF_TOKEN not set"):
             diarize("/fake/audio.wav")
 
@@ -94,9 +94,9 @@ class TestDiarize:
             "pyannote": MagicMock(),
             "pyannote.audio": mock_pyannote,
         }):
-            if "notetaking.diarizer" in sys.modules:
-                del sys.modules["notetaking.diarizer"]
-            from notetaking.diarizer import diarize
+            if "murmur.diarizer" in sys.modules:
+                del sys.modules["murmur.diarizer"]
+            from murmur.diarizer import diarize
 
             result = diarize("/fake/audio.wav", quiet=True)
 

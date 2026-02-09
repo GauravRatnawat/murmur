@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
 
-from notetaking.config import SAMPLE_RATE
+from murmur.config import SAMPLE_RATE
 
 
 def live_transcribe(
@@ -29,7 +29,7 @@ def live_transcribe(
         on_transcript: Called with accumulated transcript text after each chunk.
         chunk_duration: Seconds of audio to accumulate before transcribing.
     """
-    from notetaking.backends._faster_whisper import Backend
+    from murmur.backends._faster_whisper import Backend
 
     backend = Backend()
     accumulated: list[np.ndarray] = []

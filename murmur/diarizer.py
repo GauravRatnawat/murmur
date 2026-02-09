@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
-from notetaking.backends import Segment
+from murmur.backends import Segment
 
 
 @dataclass

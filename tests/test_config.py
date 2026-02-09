@@ -1,8 +1,8 @@
-"""Tests for notetaking.config — paths and settings."""
+"""Tests for murmur.config — paths and settings."""
 
 from pathlib import Path
 
-from notetaking.config import (
+from murmur.config import (
     DATA_DIR,
     LLM_PROVIDER,
     NOTES_DIR,

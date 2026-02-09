@@ -8,7 +8,7 @@ import numpy as np
 import sounddevice as sd
 from scipy.io import wavfile
 
-from notetaking.config import CHANNELS, RECORDINGS_DIR, SAMPLE_RATE
+from murmur.config import CHANNELS, RECORDINGS_DIR, SAMPLE_RATE
 
 
 def list_devices():
@@ -46,7 +46,7 @@ def record(
         quiet: Suppress all print output.
         audio_queue: If provided, copies each audio chunk into this queue for live transcription.
     """
-    from notetaking.config import DEFAULT_DEVICE
+    from murmur.config import DEFAULT_DEVICE
 
     device_name = device_name or DEFAULT_DEVICE
     device_id = find_device(device_name)

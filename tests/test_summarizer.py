@@ -1,11 +1,11 @@
-"""Tests for notetaking.summarizer — transcript parsing and summarize flow."""
+"""Tests for murmur.summarizer — transcript parsing and summarize flow."""
 
 import os
 from unittest.mock import call, patch
 
 import pytest
 
-from notetaking.summarizer import _sanitize_slug, summarize
+from murmur.summarizer import _sanitize_slug, summarize
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def test_empty_transcript_raises(empty_transcript):
 def test_summarize_calls_llm_and_writes_notes(transcript_file, monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "fake")
 
-    with patch("notetaking.summarizer.call_llm", return_value="## Summary\nTest notes") as mock:
+    with patch("murmur.summarizer.call_llm", return_value="## Summary\nTest notes") as mock:
         path = summarize(str(transcript_file), provider="anthropic")
 
     mock.assert_called_once()
@@ -56,7 +56,7 @@ def test_summarize_calls_llm_and_writes_notes(transcript_file, monkeypatch):
 def test_summarize_respects_provider_arg(transcript_file, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake")
 
-    with patch("notetaking.summarizer.call_llm", return_value="notes") as mock:
+    with patch("murmur.summarizer.call_llm", return_value="notes") as mock:
         summarize(str(transcript_file), provider="gemini")
 
     assert mock.call_args_list[0][0][0] == "gemini"
@@ -90,16 +90,16 @@ class TestSmartNaming:
         monkeypatch.setenv("ANTHROPIC_API_KEY", "fake")
         recordings, transcripts, notes, transcript = self._setup_meeting_files(tmp_path)
 
-        monkeypatch.setattr("notetaking.summarizer.RECORDINGS_DIR", recordings)
-        monkeypatch.setattr("notetaking.summarizer.TRANSCRIPTS_DIR", transcripts)
-        monkeypatch.setattr("notetaking.summarizer.NOTES_DIR", notes)
+        monkeypatch.setattr("murmur.summarizer.RECORDINGS_DIR", recordings)
+        monkeypatch.setattr("murmur.summarizer.TRANSCRIPTS_DIR", transcripts)
+        monkeypatch.setattr("murmur.summarizer.NOTES_DIR", notes)
 
         def fake_llm(provider, system, user):
             if "kebab-case" in system:
                 return "q1-product-roadmap-review"
             return "## Summary\nReviewed Q1 roadmap."
 
-        with patch("notetaking.summarizer.call_llm", side_effect=fake_llm):
+        with patch("murmur.summarizer.call_llm", side_effect=fake_llm):
             result = summarize(str(transcript), provider="anthropic")
 
         new_stem = "20260208_120000_q1-product-roadmap-review"
@@ -117,9 +117,9 @@ class TestSmartNaming:
         monkeypatch.setenv("ANTHROPIC_API_KEY", "fake")
         recordings, transcripts, notes, transcript = self._setup_meeting_files(tmp_path)
 
-        monkeypatch.setattr("notetaking.summarizer.RECORDINGS_DIR", recordings)
-        monkeypatch.setattr("notetaking.summarizer.TRANSCRIPTS_DIR", transcripts)
-        monkeypatch.setattr("notetaking.summarizer.NOTES_DIR", notes)
+        monkeypatch.setattr("murmur.summarizer.RECORDINGS_DIR", recordings)
+        monkeypatch.setattr("murmur.summarizer.TRANSCRIPTS_DIR", transcripts)
+        monkeypatch.setattr("murmur.summarizer.NOTES_DIR", notes)
 
         call_count = 0
 
@@ -131,7 +131,7 @@ class TestSmartNaming:
             # Second call (slug generation) fails
             raise RuntimeError("API error")
 
-        with patch("notetaking.summarizer.call_llm", side_effect=fake_llm):
+        with patch("murmur.summarizer.call_llm", side_effect=fake_llm):
             result = summarize(str(transcript), provider="anthropic")
 
         old_stem = "meeting_20260208_120000"
@@ -148,16 +148,16 @@ class TestSmartNaming:
         # Remove the recording
         (recordings / "meeting_20260208_120000.wav").unlink()
 
-        monkeypatch.setattr("notetaking.summarizer.RECORDINGS_DIR", recordings)
-        monkeypatch.setattr("notetaking.summarizer.TRANSCRIPTS_DIR", transcripts)
-        monkeypatch.setattr("notetaking.summarizer.NOTES_DIR", notes)
+        monkeypatch.setattr("murmur.summarizer.RECORDINGS_DIR", recordings)
+        monkeypatch.setattr("murmur.summarizer.TRANSCRIPTS_DIR", transcripts)
+        monkeypatch.setattr("murmur.summarizer.NOTES_DIR", notes)
 
         def fake_llm(provider, system, user):
             if "kebab-case" in system:
                 return "standup-sync"
             return "## Summary\nNotes."
 
-        with patch("notetaking.summarizer.call_llm", side_effect=fake_llm):
+        with patch("murmur.summarizer.call_llm", side_effect=fake_llm):
             result = summarize(str(transcript), provider="anthropic")
 
         new_stem = "20260208_120000_standup-sync"

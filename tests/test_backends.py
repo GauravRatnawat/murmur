@@ -1,11 +1,11 @@
-"""Tests for notetaking.backends — factory, registry, backend behavior."""
+"""Tests for murmur.backends — factory, registry, backend behavior."""
 
 import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from notetaking.backends import BACKENDS, Segment, TranscriptionResult, get_backend, _cached_backend
+from murmur.backends import BACKENDS, Segment, TranscriptionResult, get_backend, _cached_backend
 
 
 @pytest.fixture(autouse=True)
@@ -59,17 +59,17 @@ class TestTranscriptionResult:
 
 class TestFactory:
     def test_get_backend_imports_module(self):
-        with patch("notetaking.backends.importlib.import_module") as mock_import:
+        with patch("murmur.backends.importlib.import_module") as mock_import:
             mock_module = MagicMock()
             mock_module.Backend.return_value = MagicMock()
             mock_import.return_value = mock_module
 
             backend = get_backend("whisper")
-            mock_import.assert_called_once_with("notetaking.backends._whisper")
+            mock_import.assert_called_once_with("murmur.backends._whisper")
             assert backend is not None
 
     def test_get_backend_caches(self):
-        with patch("notetaking.backends.importlib.import_module") as mock_import:
+        with patch("murmur.backends.importlib.import_module") as mock_import:
             mock_module = MagicMock()
             mock_backend = MagicMock()
             mock_module.Backend.return_value = mock_backend
@@ -81,25 +81,25 @@ class TestFactory:
             mock_import.assert_called_once()
 
     def test_get_backend_missing_package_raises(self):
-        with patch("notetaking.backends.importlib.import_module", side_effect=ImportError):
+        with patch("murmur.backends.importlib.import_module", side_effect=ImportError):
             with pytest.raises(RuntimeError, match="not installed"):
                 get_backend("faster")
 
     def test_get_backend_default_from_config(self, monkeypatch):
-        monkeypatch.setattr("notetaking.config.TRANSCRIPTION_BACKEND", "whisper")
-        with patch("notetaking.backends.importlib.import_module") as mock_import:
+        monkeypatch.setattr("murmur.config.TRANSCRIPTION_BACKEND", "whisper")
+        with patch("murmur.backends.importlib.import_module") as mock_import:
             mock_module = MagicMock()
             mock_module.Backend.return_value = MagicMock()
             mock_import.return_value = mock_module
 
             get_backend(None)
-            mock_import.assert_called_once_with("notetaking.backends._whisper")
+            mock_import.assert_called_once_with("murmur.backends._whisper")
 
 
 class TestWhisperBackend:
     @patch("whisper.load_model")
     def test_whisper_backend_transcribe(self, mock_load):
-        from notetaking.backends._whisper import Backend
+        from murmur.backends._whisper import Backend
 
         mock_model = MagicMock()
         mock_model.transcribe.return_value = {
@@ -134,9 +134,9 @@ class TestFasterWhisperBackend:
 
         with patch.dict(sys.modules, {"faster_whisper": mock_fw}):
             # Force reimport
-            if "notetaking.backends._faster_whisper" in sys.modules:
-                del sys.modules["notetaking.backends._faster_whisper"]
-            from notetaking.backends._faster_whisper import Backend
+            if "murmur.backends._faster_whisper" in sys.modules:
+                del sys.modules["murmur.backends._faster_whisper"]
+            from murmur.backends._faster_whisper import Backend
 
             backend = Backend()
             result = backend.transcribe("/fake/audio.wav", quiet=True)
@@ -158,9 +158,9 @@ class TestMlxWhisperBackend:
         }
 
         with patch.dict(sys.modules, {"mlx_whisper": mock_mlx}):
-            if "notetaking.backends._mlx_whisper" in sys.modules:
-                del sys.modules["notetaking.backends._mlx_whisper"]
-            from notetaking.backends._mlx_whisper import Backend
+            if "murmur.backends._mlx_whisper" in sys.modules:
+                del sys.modules["murmur.backends._mlx_whisper"]
+            from murmur.backends._mlx_whisper import Backend
 
             backend = Backend()
             result = backend.transcribe("/fake/audio.wav", quiet=True)

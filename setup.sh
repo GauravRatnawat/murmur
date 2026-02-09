@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Notetaking Setup ==="
+echo "=== Murmur Setup ==="
 echo ""
 
 # 1. Pick LLM provider
@@ -101,16 +101,16 @@ echo ""
 echo "=== Verifying setup ==="
 echo ""
 echo "Devices:"
-notetaking devices
+murmur devices
 echo ""
 echo "Provider: $provider"
 echo ""
 echo "=== Setup complete! ==="
 echo ""
 echo "Usage:"
-echo "  notetaking notes                  # full pipeline: record → transcribe → summarize"
-echo "  notetaking summarize -p gemini    # summarize with a specific provider"
-echo "  notetaking record                 # record only"
-echo "  notetaking --help                 # all commands"
+echo "  murmur notes                  # full pipeline: record → transcribe → summarize"
+echo "  murmur summarize -p gemini    # summarize with a specific provider"
+echo "  murmur record                 # record only"
+echo "  murmur --help                 # all commands"
 echo ""
 echo "Before a meeting, set System Settings → Sound → Output → Multi-Output Device"

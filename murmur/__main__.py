@@ -1,4 +1,4 @@
-from notetaking.cli import cli
+from murmur.cli import cli
 
 if __name__ == "__main__":
     cli()

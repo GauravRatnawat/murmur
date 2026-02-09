@@ -1,4 +1,4 @@
-# Notetaking
+# Murmur
 
 A CLI tool that records meeting audio, transcribes it with Whisper, and generates structured meeting notes using your choice of LLM.
 
@@ -17,8 +17,8 @@ Works with any app that plays audio through system output — Teams, Google Meet
 ## Project Structure
 
 ```
-notetaking/
-├── notetaking/
+murmur/
+├── murmur/
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── cli.py            # Click CLI commands
@@ -26,7 +26,16 @@ notetaking/
 │   ├── llm.py            # Multi-provider LLM dispatch
 │   ├── recorder.py       # Audio recording via sounddevice
 │   ├── transcriber.py    # Speech-to-text via Whisper
-│   └── summarizer.py     # Meeting notes via LLM
+│   ├── summarizer.py     # Meeting notes via LLM
+│   ├── tui.py            # Textual TUI dashboard
+│   ├── watcher.py        # Auto-meeting detection
+│   ├── diarizer.py       # Speaker diarization
+│   ├── live_transcriber.py # Live transcription
+│   └── backends/         # Pluggable transcription backends
+│       ├── __init__.py
+│       ├── _whisper.py
+│       ├── _faster_whisper.py
+│       └── _mlx_whisper.py
 ├── data/
 │   ├── recordings/       # .wav files (gitignored)
 │   ├── transcripts/      # .txt files (gitignored)
@@ -42,8 +51,8 @@ notetaking/
 ## Setup
 
 ```bash
-git clone https://github.com/GauravRatnawat/notetaking.git
-cd notetaking
+git clone https://github.com/GauravRatnawat/murmur.git
+cd murmur
 ./setup.sh
 ```
 
@@ -55,21 +64,30 @@ For manual setup or details on audio devices, see [docs/setup_audio.md](docs/set
 
 ```bash
 # Full pipeline: record → transcribe → summarize
-notetaking notes
+murmur notes
 
 # Use a specific provider
-notetaking notes --provider gemini
-notetaking summarize --provider groq
+murmur notes --provider gemini
+murmur summarize --provider groq
 
 # Individual steps
-notetaking record              # record until Ctrl+C
-notetaking record -t 60        # record for 60 seconds
-notetaking transcribe          # transcribe latest recording
-notetaking summarize           # summarize latest transcript
+murmur record              # record until Ctrl+C
+murmur record -t 60        # record for 60 seconds
+murmur transcribe          # transcribe latest recording
+murmur summarize           # summarize latest transcript
+
+# New features
+murmur copy                # copy notes to clipboard
+murmur export              # export notes to PDF
+murmur export -f docx      # export to DOCX
+murmur watch               # auto-record when meeting detected
+murmur transcribe --backend faster   # use faster-whisper
+murmur transcribe --diarize          # speaker diarization
+murmur tui                 # interactive TUI dashboard
 
 # Utilities
-notetaking devices             # list audio devices
-notetaking ls                  # list all saved files
+murmur devices             # list audio devices
+murmur ls                  # list all saved files
 ```
 
 ### Switching providers
@@ -81,13 +99,13 @@ Set `LLM_PROVIDER` in `.env` to change the default, or use `--provider` / `-p` o
 LLM_PROVIDER=gemini
 
 # or per-command
-notetaking summarize -p ollama
+murmur summarize -p ollama
 ```
 
 ### Before a meeting
 
 1. Set **System Settings → Sound → Output** to **Multi-Output Device**
-2. Run `notetaking notes` (or `notetaking record`)
+2. Run `murmur notes` (or `murmur record`)
 3. After the meeting, switch output back to normal speakers
 
 ## License

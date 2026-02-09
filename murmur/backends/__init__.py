@@ -26,9 +26,9 @@ class TranscriptionResult:
 
 # Maps backend name -> (module_path, pip_package)
 BACKENDS: dict[str, tuple[str, str]] = {
-    "whisper": ("notetaking.backends._whisper", "openai-whisper"),
-    "faster": ("notetaking.backends._faster_whisper", "faster-whisper"),
-    "mlx": ("notetaking.backends._mlx_whisper", "mlx-whisper"),
+    "whisper": ("murmur.backends._whisper", "openai-whisper"),
+    "faster": ("murmur.backends._faster_whisper", "faster-whisper"),
+    "mlx": ("murmur.backends._mlx_whisper", "mlx-whisper"),
 }
 
 _cached_backend: dict[str, object] = {}
@@ -36,7 +36,7 @@ _cached_backend: dict[str, object] = {}
 
 def get_backend(name: str | None = None):
     """Return a backend instance by name. Caches per name."""
-    from notetaking.config import TRANSCRIPTION_BACKEND
+    from murmur.config import TRANSCRIPTION_BACKEND
 
     name = (name or TRANSCRIPTION_BACKEND).lower()
 

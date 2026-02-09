@@ -49,7 +49,7 @@ This ensures system audio plays through your speakers AND gets captured by Black
 
 ```
 Your mic ──────────────────────┐
-                               ├──→ Aggregate Device ──→ notetaking recorder
+                               ├──→ Aggregate Device ──→ murmur recorder
 System audio ──→ Multi-Output ─┤
                    ├──→ Speakers (you hear it)
                    └──→ BlackHole 2ch ─┘
@@ -58,7 +58,7 @@ System audio ──→ Multi-Output ─┤
 ## Verify Setup
 
 ```bash
-python -m notetaking devices
+python -m murmur devices
 ```
 
 You should see **Aggregate** and **Multi-Output** in the device list.

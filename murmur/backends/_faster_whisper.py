@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from notetaking.backends import Segment, TranscriptionResult
+from murmur.backends import Segment, TranscriptionResult
 
 
 class Backend:

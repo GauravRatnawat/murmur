@@ -1,8 +1,8 @@
 import re
 from pathlib import Path
 
-from notetaking.config import LLM_PROVIDER, NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
-from notetaking.llm import call_llm
+from murmur.config import LLM_PROVIDER, NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
+from murmur.llm import call_llm
 
 SYSTEM_PROMPT = """You are a meeting notes assistant. Given a meeting transcript, produce clean, structured meeting notes in Markdown format.
 

@@ -4,9 +4,9 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from notetaking.config import NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
-from notetaking.llm import PROVIDERS
-from notetaking.backends import BACKENDS
+from murmur.config import NOTES_DIR, RECORDINGS_DIR, TRANSCRIPTS_DIR
+from murmur.llm import PROVIDERS
+from murmur.backends import BACKENDS
 
 console = Console()
 
@@ -22,14 +22,14 @@ def _latest_file(directory: Path, suffix: str) -> Path | None:
 
 @click.group()
 def cli():
-    """Granola-like meeting notes CLI — record, transcribe, summarize."""
+    """Murmur — meeting notes CLI. Record, transcribe, summarize."""
     pass
 
 
 @cli.command()
 def devices():
     """List available audio devices."""
-    from notetaking.recorder import list_devices
+    from murmur.recorder import list_devices
 
     list_devices()
 
@@ -39,7 +39,7 @@ def devices():
 @click.option("-t", "--duration", default=None, type=float, help="Recording duration in seconds. Omit to record until Ctrl+C.")
 def record(device, duration):
     """Record meeting audio."""
-    from notetaking.recorder import record as do_record
+    from murmur.recorder import record as do_record
 
     path = do_record(device_name=device, duration=duration)
     console.print(f"[green]Recording saved:[/green] {path}")
@@ -51,7 +51,7 @@ def record(device, duration):
 @click.option("--diarize", is_flag=True, default=False, help="Enable speaker diarization (requires HF_TOKEN).")
 def transcribe(file, backend, diarize):
     """Transcribe a recording. Defaults to the most recent."""
-    from notetaking.transcriber import transcribe as do_transcribe
+    from murmur.transcriber import transcribe as do_transcribe
 
     if file is None:
         latest = _latest_file(RECORDINGS_DIR, ".wav")
@@ -70,7 +70,7 @@ def transcribe(file, backend, diarize):
 @click.option("-p", "--provider", type=click.Choice(PROVIDER_NAMES, case_sensitive=False), default=None, help="LLM provider to use.")
 def summarize(file, provider):
     """Summarize a transcript. Defaults to the most recent."""
-    from notetaking.summarizer import summarize as do_summarize
+    from murmur.summarizer import summarize as do_summarize
 
     if file is None:
         latest = _latest_file(TRANSCRIPTS_DIR, ".txt")
@@ -92,9 +92,9 @@ def summarize(file, provider):
 @click.option("--diarize", is_flag=True, default=False, help="Enable speaker diarization.")
 def notes(device, duration, provider, backend, diarize):
     """Full pipeline: record → transcribe → summarize."""
-    from notetaking.recorder import record as do_record
-    from notetaking.summarizer import summarize as do_summarize
-    from notetaking.transcriber import transcribe as do_transcribe
+    from murmur.recorder import record as do_record
+    from murmur.summarizer import summarize as do_summarize
+    from murmur.transcriber import transcribe as do_transcribe
 
     console.rule("[bold]Step 1: Record")
     wav_path = do_record(device_name=device, duration=duration)
@@ -146,7 +146,7 @@ def copy(file):
     except ImportError:
         console.print(
             "[red]pyperclip is not installed.[/red] "
-            "Install it with: [bold]pip install notetaking\\[clipboard][/bold]"
+            "Install it with: [bold]pip install murmur\\[clipboard][/bold]"
         )
         raise SystemExit(1)
 
@@ -175,7 +175,7 @@ def export(file, fmt):
     except ImportError:
         console.print(
             "[red]pypandoc is not installed.[/red] "
-            "Install it with: [bold]pip install notetaking\\[export][/bold]"
+            "Install it with: [bold]pip install murmur\\[export][/bold]"
         )
         raise SystemExit(1)
 
@@ -202,17 +202,17 @@ def watch(device, backend, provider):
     import threading
 
     try:
-        from notetaking.watcher import MeetingEvent, watch_meetings
+        from murmur.watcher import MeetingEvent, watch_meetings
     except ImportError:
         console.print(
             "[red]psutil is not installed.[/red] "
-            "Install it with: [bold]pip install notetaking\\[watch][/bold]"
+            "Install it with: [bold]pip install murmur\\[watch][/bold]"
         )
         raise SystemExit(1)
 
-    from notetaking.recorder import record as do_record
-    from notetaking.summarizer import summarize as do_summarize
-    from notetaking.transcriber import transcribe as do_transcribe
+    from murmur.recorder import record as do_record
+    from murmur.summarizer import summarize as do_summarize
+    from murmur.transcriber import transcribe as do_transcribe
 
     stop_recording = threading.Event()
     recording_thread: threading.Thread | None = None
@@ -267,11 +267,11 @@ def watch(device, backend, provider):
 def tui():
     """Launch interactive TUI dashboard."""
     try:
-        from notetaking.tui import main
+        from murmur.tui import main
     except ImportError:
         console.print(
             "[red]Textual is not installed.[/red] "
-            "Install it with: [bold]pip install notetaking\\[tui][/bold]"
+            "Install it with: [bold]pip install murmur\\[tui][/bold]"
         )
         raise SystemExit(1)
     main()

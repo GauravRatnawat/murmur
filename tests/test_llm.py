@@ -1,11 +1,11 @@
-"""Tests for notetaking.llm — provider dispatch logic."""
+"""Tests for murmur.llm — provider dispatch logic."""
 
 import os
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from notetaking.llm import PROVIDERS, call_llm
+from murmur.llm import PROVIDERS, call_llm
 
 
 def test_providers_dict_has_all_expected():

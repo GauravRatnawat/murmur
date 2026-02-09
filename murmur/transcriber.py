@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from notetaking.config import TRANSCRIPTS_DIR, WHISPER_MODEL
+from murmur.config import TRANSCRIPTS_DIR, WHISPER_MODEL
 
 
 def transcribe(
@@ -14,7 +14,7 @@ def transcribe(
     Saves both full text and timestamped segments.
     Returns the path to the saved transcript.
     """
-    from notetaking.backends import get_backend
+    from murmur.backends import get_backend
 
     audio_path = Path(audio_path)
     stem = audio_path.stem
@@ -27,7 +27,7 @@ def transcribe(
 
     # Optionally merge speaker diarization
     if diarize:
-        from notetaking.diarizer import diarize as run_diarize, merge_transcript_with_speakers
+        from murmur.diarizer import diarize as run_diarize, merge_transcript_with_speakers
         speaker_segments = run_diarize(str(audio_path), quiet=quiet)
         diarized = merge_transcript_with_speakers(result.segments, speaker_segments)
         # Update segments with speaker info
