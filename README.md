@@ -1,54 +1,42 @@
-# Murmur
+# Murmur — AI Meeting Notes That Run Locally
 
-A CLI tool that records meeting audio, transcribes it with Whisper, and generates structured meeting notes using your choice of LLM.
+> **Open-source, privacy-first AI note-taking app.** Records meeting audio, transcribes speech to text with Whisper, and generates structured meeting notes using any LLM — all running locally on your machine. No cloud. No subscriptions. Your data stays yours.
 
-Works with any app that plays audio through system output — Teams, Google Meet, Zoom, Slack, etc.
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://github.com/GauravRatnawat/murmur/actions/workflows/python-app.yml/badge.svg)](https://github.com/GauravRatnawat/murmur/actions)
 
-## Supported LLM Providers
+## Why Murmur?
 
-| Provider | Cost | API Key | Install |
-|----------|------|---------|---------|
-| Anthropic (Claude) | Paid | Yes | `pip install -e ".[anthropic]"` |
-| OpenAI (GPT) | Paid | Yes | `pip install -e ".[openai]"` |
-| Google Gemini | Free tier | Yes (no credit card) | `pip install -e ".[gemini]"` |
-| Groq | Free tier | Yes | `pip install -e ".[groq]"` |
-| Ollama | Free (local) | No | `pip install -e ".[ollama]"` |
+Most AI meeting note apps send your audio to the cloud. Murmur runs **entirely on your machine** — your conversations never leave your computer.
 
-## Project Structure
+- **Local-first AI transcription** — OpenAI Whisper, faster-whisper, or MLX Whisper (Apple Silicon GPU)
+- **Any LLM provider** — Ollama (fully local), Anthropic, OpenAI, Gemini, Groq
+- **One command** — `murmur notes` records, transcribes, and summarizes in a single pipeline
+- **Auto-meeting detection** — detects Zoom, Teams, WebEx, Slack, FaceTime and starts recording
+- **Speaker diarization** — identifies who said what using pyannote.audio
+- **Live transcription** — see real-time text while recording
+- **Export anywhere** — PDF, DOCX, or clipboard
+- **Interactive TUI** — terminal dashboard with keyboard shortcuts
+- **Works with any meeting app** — Teams, Google Meet, Zoom, Slack, Discord, etc.
 
-```
-murmur/
-├── murmur/
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py            # Click CLI commands
-│   ├── config.py         # Settings (audio, model, paths)
-│   ├── llm.py            # Multi-provider LLM dispatch
-│   ├── recorder.py       # Audio recording via sounddevice
-│   ├── transcriber.py    # Speech-to-text via Whisper
-│   ├── summarizer.py     # Meeting notes via LLM
-│   ├── tui.py            # Textual TUI dashboard
-│   ├── watcher.py        # Auto-meeting detection
-│   ├── diarizer.py       # Speaker diarization
-│   ├── live_transcriber.py # Live transcription
-│   └── backends/         # Pluggable transcription backends
-│       ├── __init__.py
-│       ├── _whisper.py
-│       ├── _faster_whisper.py
-│       └── _mlx_whisper.py
-├── data/
-│   ├── recordings/       # .wav files (gitignored)
-│   ├── transcripts/      # .txt files (gitignored)
-│   └── notes/            # .md files (gitignored)
-├── docs/
-│   └── setup_audio.md    # macOS audio setup guide
-├── pyproject.toml
-├── requirements.txt
-├── .env.example
-└── .gitignore
-```
+## Features
 
-## Setup
+| Feature | CLI | TUI | Description |
+|---------|-----|-----|-------------|
+| Record audio | `murmur record` | `r` | Captures mic + system audio |
+| Transcribe | `murmur transcribe` | `t` | Speech-to-text via Whisper |
+| Summarize | `murmur summarize` | `n` | Structured notes via LLM |
+| Full pipeline | `murmur notes` | — | Record + transcribe + summarize |
+| Copy to clipboard | `murmur copy` | `c` | Copy notes/transcript |
+| Export PDF/DOCX | `murmur export` | `e` | Export notes to file |
+| Auto-record meetings | `murmur watch` | `w` | Detect meeting apps, auto-record |
+| Speaker labels | `--diarize` | — | Who said what |
+| Backend selection | `--backend faster` | — | Choose transcription engine |
+| Live transcript | — | automatic | Real-time text during recording |
+| Interactive dashboard | `murmur tui` | — | Full TUI with keybindings |
+
+## Quick Start
 
 ```bash
 git clone https://github.com/GauravRatnawat/murmur.git
@@ -56,57 +44,140 @@ cd murmur
 ./setup.sh
 ```
 
-This single script lets you pick an LLM provider, installs the right SDK, sets up your API key, installs BlackHole, and walks you through audio device configuration.
+The setup script lets you pick an LLM provider, installs dependencies, configures your API key, and walks you through macOS audio device setup.
 
-For manual setup or details on audio devices, see [docs/setup_audio.md](docs/setup_audio.md).
+### Fully Local Setup (No Cloud)
+
+For a completely offline, privacy-first setup using Ollama:
+
+```bash
+pip install -e ".[ollama]"
+# Make sure Ollama is running: ollama serve
+echo "LLM_PROVIDER=ollama" > .env
+murmur notes
+```
 
 ## Usage
 
 ```bash
-# Full pipeline: record → transcribe → summarize
+# Full pipeline: record, transcribe, summarize — one command
 murmur notes
 
-# Use a specific provider
+# Use a specific LLM provider
 murmur notes --provider gemini
-murmur summarize --provider groq
+murmur notes --provider ollama     # fully local, no API key needed
 
 # Individual steps
-murmur record              # record until Ctrl+C
-murmur record -t 60        # record for 60 seconds
-murmur transcribe          # transcribe latest recording
-murmur summarize           # summarize latest transcript
+murmur record                      # record until Ctrl+C
+murmur record -t 60                # record for 60 seconds
+murmur transcribe                  # transcribe latest recording
+murmur summarize                   # summarize latest transcript
 
-# New features
-murmur copy                # copy notes to clipboard
-murmur export              # export notes to PDF
-murmur export -f docx      # export to DOCX
-murmur watch               # auto-record when meeting detected
-murmur transcribe --backend faster   # use faster-whisper
-murmur transcribe --diarize          # speaker diarization
-murmur tui                 # interactive TUI dashboard
+# Faster transcription (4x faster on CPU)
+murmur transcribe --backend faster
+
+# Speaker diarization (who said what)
+murmur transcribe --diarize
+
+# Export and share
+murmur copy                        # copy notes to clipboard
+murmur export                      # export to PDF
+murmur export -f docx              # export to DOCX
+
+# Auto-record when meetings start
+murmur watch                       # detects Zoom, Teams, etc.
+
+# Interactive TUI dashboard
+murmur tui
 
 # Utilities
-murmur devices             # list audio devices
-murmur ls                  # list all saved files
+murmur devices                     # list audio devices
+murmur ls                          # list all saved files
 ```
 
-### Switching providers
+## Supported LLM Providers
 
-Set `LLM_PROVIDER` in `.env` to change the default, or use `--provider` / `-p` on any command:
+| Provider | Cost | Local? | API Key | Install |
+|----------|------|--------|---------|---------|
+| **Ollama** | Free | Yes | No | `pip install -e ".[ollama]"` |
+| Groq | Free tier | No | Yes | `pip install -e ".[groq]"` |
+| Google Gemini | Free tier | No | Yes (no credit card) | `pip install -e ".[gemini]"` |
+| Anthropic (Claude) | Paid | No | Yes | `pip install -e ".[anthropic]"` |
+| OpenAI (GPT) | Paid | No | Yes | `pip install -e ".[openai]"` |
+
+## Transcription Backends
+
+| Backend | Speed | Hardware | Install |
+|---------|-------|----------|---------|
+| `whisper` (default) | Baseline | CPU | Included |
+| `faster` | ~4x faster | CPU (CTranslate2) | `pip install -e ".[faster]"` |
+| `mlx` | GPU-accelerated | Apple Silicon | `pip install -e ".[mlx]"` |
+
+## How It Works
+
+```
+Meeting audio ──→ Record ──→ Transcribe (Whisper) ──→ Summarize (LLM) ──→ Markdown notes
+                    │              │                        │
+                    ▼              ▼                        ▼
+               data/recordings/  data/transcripts/    data/notes/
+                  *.wav             *.txt                *.md
+```
+
+All data is stored locally in the `data/` directory. Nothing is sent to the cloud unless you choose a cloud LLM provider.
+
+## Project Structure
+
+```
+murmur/
+├── murmur/
+│   ├── cli.py              # Click CLI commands
+│   ├── tui.py              # Textual TUI dashboard
+│   ├── config.py           # Settings (audio, model, paths)
+│   ├── recorder.py         # Audio recording via sounddevice
+│   ├── transcriber.py      # Speech-to-text orchestration
+│   ├── summarizer.py       # Meeting notes via LLM
+│   ├── llm.py              # Multi-provider LLM dispatch
+│   ├── watcher.py          # Auto-meeting detection (psutil)
+│   ├── diarizer.py         # Speaker diarization (pyannote)
+│   ├── live_transcriber.py # Real-time transcription
+│   └── backends/           # Pluggable transcription engines
+│       ├── _whisper.py     # OpenAI Whisper
+│       ├── _faster_whisper.py  # faster-whisper (CTranslate2)
+│       └── _mlx_whisper.py     # MLX Whisper (Apple Silicon)
+├── tests/                  # 87 tests
+├── data/                   # Local data (gitignored)
+└── docs/
+    └── setup_audio.md      # macOS audio setup guide
+```
+
+## macOS Audio Setup
+
+Murmur captures both your microphone and system audio (e.g., the other person on a Zoom call). On macOS, this requires [BlackHole](https://github.com/ExistentialAudio/BlackHole) (free, open-source virtual audio driver).
 
 ```bash
-# .env
-LLM_PROVIDER=gemini
-
-# or per-command
-murmur summarize -p ollama
+brew install blackhole-2ch
 ```
+
+See [docs/setup_audio.md](docs/setup_audio.md) for the full setup guide.
 
 ### Before a meeting
 
-1. Set **System Settings → Sound → Output** to **Multi-Output Device**
-2. Run `murmur notes` (or `murmur record`)
+1. Set **System Settings > Sound > Output** to **Multi-Output Device**
+2. Run `murmur notes` (or `murmur watch` for auto-detection)
 3. After the meeting, switch output back to normal speakers
+
+## Optional Dependencies
+
+```bash
+pip install -e ".[clipboard]"   # pyperclip — clipboard copy
+pip install -e ".[export]"      # pypandoc — PDF/DOCX export
+pip install -e ".[faster]"      # faster-whisper — 4x faster CPU transcription
+pip install -e ".[mlx]"         # mlx-whisper — Apple Silicon GPU transcription
+pip install -e ".[watch]"       # psutil — auto-meeting detection
+pip install -e ".[diarize]"     # pyannote.audio — speaker diarization
+pip install -e ".[tui]"         # textual — interactive TUI dashboard
+pip install -e ".[all]"         # everything (except mlx and diarize)
+```
 
 ## License
 
