@@ -77,18 +77,8 @@ fi
 echo ""
 
 # 5. Audio device setup
-echo "macOS audio device setup"
-echo ""
-echo "  You need to create two devices in Audio MIDI Setup:"
-echo ""
-echo "  a) Aggregate Device (combines mic + system audio for recording)"
-echo "     - Check: MacBook Pro Microphone"
-echo "     - Check: BlackHole 2ch (enable Drift Correction)"
-echo ""
-echo "  b) Multi-Output Device (lets you hear audio + routes it to BlackHole)"
-echo "     - Check: MacBook Pro Speakers"
-echo "     - Check: BlackHole 2ch (enable Drift Correction)"
-echo ""
+echo "Audio setup: read docs/setup_audio.md in repo."
+echo "Read online: https://github.com/GauravRatnawat/murmur/blob/master/docs/setup_audio.md"
 read -rp "  Open Audio MIDI Setup now? [Y/n] " open_midi
 if [[ ! "$open_midi" =~ ^[Nn]$ ]]; then
     open /Applications/Utilities/Audio\ MIDI\ Setup.app
